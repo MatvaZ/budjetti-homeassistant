@@ -1,0 +1,24 @@
+# Uusi julkaisu (tagi vX.Y.Z), kun VERSION muuttuu main-haarassa. HACS näyttää päivityksen julkaisuista.
+name: Julkaisu
+
+on:
+  push:
+    branches: [main]
+    paths: [VERSION]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Luo julkaisu
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          v="v$(tr -d '[:space:]' < VERSION)"
+          if gh release view "$v" >/dev/null 2>&1; then echo "$v on jo julkaistu"; exit 0; fi
+          gh release create "$v" --title "$v" --notes "$(git log -1 --format=%B)"

@@ -1,0 +1,32 @@
+# Tarkistaa integraation Home Assistantin (hassfest) ja HACS:n työkaluilla.
+name: Tarkistus
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  hassfest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: home-assistant/actions/hassfest@master
+
+  hacs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: hacs/action@main
+        with:
+          category: integration
+          ignore: brands
+
+  versio:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: VERSION = manifest.json
+        run: |
+          v=$(tr -d '[:space:]' < VERSION)
+          m=$(python3 -c "import json;print(json.load(open('custom_components/budjetti/manifest.json'))['version'])")
+          [ "$v" = "$m" ] || { echo "VERSION ($v) ja manifest.json ($m) eroavat"; exit 1; }
