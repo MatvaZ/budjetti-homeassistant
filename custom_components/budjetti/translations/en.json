@@ -1,0 +1,132 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Budjetti",
+        "description": "Budjetti address (e.g. http://192.168.1.20:8000) and API key. Create the key in the Budjetti app: Tili → API-avaimet → Luo avain.",
+        "data": {
+          "url": "URL",
+          "api_key": "API key"
+        }
+      },
+      "reauth_confirm": {
+        "title": "New API key",
+        "description": "Budjetti rejected the current API key. Create a new one in the Budjetti app.",
+        "data": {
+          "api_key": "API key"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not connect to Budjetti. Check the URL.",
+      "invalid_auth": "Invalid API key."
+    },
+    "abort": {
+      "already_configured": "This budget is already configured.",
+      "reauth_successful": "API key updated."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "expenses": {
+        "name": "Expenses this month"
+      },
+      "income": {
+        "name": "Income this month"
+      },
+      "net": {
+        "name": "Net this month"
+      },
+      "total_left": {
+        "name": "Total budget left"
+      },
+      "forecast": {
+        "name": "Expense forecast for the month"
+      },
+      "category": {
+        "name": "{category}"
+      }
+    }
+  },
+  "selector": {
+    "tx_type": {
+      "options": {
+        "expense": "Expense",
+        "income": "Income",
+        "refund": "Refund"
+      }
+    }
+  },
+  "services": {
+    "add_transaction": {
+      "name": "Add transaction",
+      "description": "Adds an expense, income or refund.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Budget",
+          "description": "Optional when several budgets are configured."
+        },
+        "amount": {
+          "name": "Amount",
+          "description": "In euros."
+        },
+        "category": {
+          "name": "Category",
+          "description": "E.g. Ruoka."
+        },
+        "note": {
+          "name": "Note",
+          "description": "E.g. shop name."
+        },
+        "date": {
+          "name": "Date",
+          "description": "Defaults to today."
+        },
+        "type": {
+          "name": "Type",
+          "description": "Expense, income or refund."
+        }
+      }
+    },
+    "set_budget": {
+      "name": "Set budget",
+      "description": "Sets a category's monthly budget from the month onwards (0 = remove). Category Yhteensä is the total budget.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Budget",
+          "description": "Optional when several budgets are configured."
+        },
+        "category": {
+          "name": "Category",
+          "description": "E.g. Ruoka or Yhteensä."
+        },
+        "amount": {
+          "name": "Amount",
+          "description": "Euros per month."
+        },
+        "month": {
+          "name": "Month",
+          "description": "YYYY-MM, defaults to current."
+        },
+        "only_this_month": {
+          "name": "Only this month",
+          "description": "The next month reverts to the previous budget."
+        }
+      }
+    },
+    "delete_transaction": {
+      "name": "Delete transaction",
+      "description": "Deletes a transaction by id.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Budget",
+          "description": "Optional when several budgets are configured."
+        },
+        "id": {
+          "name": "Id",
+          "description": "Transaction id."
+        }
+      }
+    }
+  }
+}

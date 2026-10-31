@@ -1,0 +1,132 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Budjetti",
+        "description": "Budjetin osoite (esim. http://192.168.1.20:8000) ja API-avain. Avain luodaan Budjetti-sovelluksessa: Tili → API-avaimet → Luo avain.",
+        "data": {
+          "url": "Osoite",
+          "api_key": "API-avain"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Uusi API-avain",
+        "description": "Budjetti ei hyväksy nykyistä API-avainta. Luo uusi Budjetti-sovelluksen Tili-osiossa.",
+        "data": {
+          "api_key": "API-avain"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Budjettiin ei saatu yhteyttä. Tarkista osoite.",
+      "invalid_auth": "API-avain ei kelpaa."
+    },
+    "abort": {
+      "already_configured": "Tämä budjetti on jo lisätty.",
+      "reauth_successful": "API-avain päivitetty."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "expenses": {
+        "name": "Menot tässä kuussa"
+      },
+      "income": {
+        "name": "Tulot tässä kuussa"
+      },
+      "net": {
+        "name": "Saldo tässä kuussa"
+      },
+      "total_left": {
+        "name": "Kokonaisbudjettia jäljellä"
+      },
+      "forecast": {
+        "name": "Menoennuste kuun loppuun"
+      },
+      "category": {
+        "name": "{category}"
+      }
+    }
+  },
+  "selector": {
+    "tx_type": {
+      "options": {
+        "expense": "Meno",
+        "income": "Tulo",
+        "refund": "Hyvitys"
+      }
+    }
+  },
+  "services": {
+    "add_transaction": {
+      "name": "Lisää tapahtuma",
+      "description": "Lisää menon, tulon tai hyvityksen budjettiin.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Budjetti",
+          "description": "Valinnainen, jos budjetteja on useita."
+        },
+        "amount": {
+          "name": "Summa",
+          "description": "Euroina."
+        },
+        "category": {
+          "name": "Kategoria",
+          "description": "Esim. Ruoka."
+        },
+        "note": {
+          "name": "Kuvaus",
+          "description": "Esim. kaupan nimi."
+        },
+        "date": {
+          "name": "Päivä",
+          "description": "Oletus tänään."
+        },
+        "type": {
+          "name": "Tyyppi",
+          "description": "Meno, tulo tai hyvitys."
+        }
+      }
+    },
+    "set_budget": {
+      "name": "Aseta budjetti",
+      "description": "Asettaa kategorian kuukausibudjetin, voimassa kuukaudesta eteenpäin (0 = poista). Kategoria Yhteensä on kokonaisbudjetti.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Budjetti",
+          "description": "Valinnainen, jos budjetteja on useita."
+        },
+        "category": {
+          "name": "Kategoria",
+          "description": "Esim. Ruoka tai Yhteensä."
+        },
+        "amount": {
+          "name": "Summa",
+          "description": "Euroa kuukaudessa."
+        },
+        "month": {
+          "name": "Kuukausi",
+          "description": "YYYY-MM, oletus kuluva."
+        },
+        "only_this_month": {
+          "name": "Vain tämä kuukausi",
+          "description": "Seuraava kuukausi palaa entiseen."
+        }
+      }
+    },
+    "delete_transaction": {
+      "name": "Poista tapahtuma",
+      "description": "Poistaa tapahtuman id:n perusteella.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Budjetti",
+          "description": "Valinnainen, jos budjetteja on useita."
+        },
+        "id": {
+          "name": "Id",
+          "description": "Tapahtuman id."
+        }
+      }
+    }
+  }
+}
