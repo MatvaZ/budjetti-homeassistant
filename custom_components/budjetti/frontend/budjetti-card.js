@@ -8,6 +8,7 @@ const MONTHS = ["tammikuu", "helmikuu", "maaliskuu", "huhtikuu", "toukokuu", "ke
 const TOTAL = "Yhteensä";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const mdi = (name) => `<ha-icon icon="mdi:${name}"></ha-icon>`;
 const eur = (cents) => (cents < 0 ? "−" : "") + (Math.abs(cents) / 100).toFixed(2).replace(".", ",") + " €";
 const toCents = (v) => Math.round(parseFloat(String(v).replace(/\s/g, "").replace(",", ".")) * 100);
 const today = () => new Date().toISOString().slice(0, 10);
@@ -33,6 +34,8 @@ const STYLE = `
   ha-card { padding: 16px; }
   .head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
   .head .m { font-size: 18px; font-weight: 500; }
+  ha-icon { --mdc-icon-size: 18px; vertical-align: -3px; pointer-events: none; }
+  .nav ha-icon { --mdc-icon-size: 24px; }
   .nav { background: none; border: none; color: var(--primary-text-color); font-size: 22px; cursor: pointer; padding: 0 10px; line-height: 1; }
   .sum { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
   .sum div { background: var(--secondary-background-color); border-radius: 10px; padding: 8px 10px; }
@@ -47,7 +50,7 @@ const STYLE = `
   .fill { height: 100%; border-radius: 3px; background: var(--primary-color); }
   .fill.warn { background: var(--warning-color, #ffa000); } .fill.over { background: var(--error-color); }
   .actions { display: flex; gap: 8px; margin: 14px 0 4px; }
-  button.btn { flex: 1; border: none; border-radius: 10px; padding: 11px; font: inherit; font-weight: 500; cursor: pointer;
+  button.btn { display: flex; align-items: center; justify-content: center; gap: 4px; flex: 1; border: none; border-radius: 10px; padding: 11px; font: inherit; font-weight: 500; cursor: pointer;
     background: var(--primary-color); color: var(--text-primary-color, #fff); }
   button.btn.sec2 { background: var(--secondary-background-color); color: var(--primary-text-color); }
   button.btn.danger { background: none; color: var(--error-color); }
@@ -235,10 +238,10 @@ class BudjettiCard extends HTMLElement {
 
   _mainView() {
     const d = this._data;
-    const head = `<div class="head"><button class="nav" data-a="prev" aria-label="Edellinen">‹</button>
-      <span class="m">${monthLabel(this._month)}</span><button class="nav" data-a="next" aria-label="Seuraava">›</button></div>`;
-    const buttons = `<div class="actions"><button class="btn" data-a="add">+ Lisää</button>
-      <button class="btn sec2" data-a="scan">📷 Kuitti</button></div>
+    const head = `<div class="head"><button class="nav" data-a="prev" aria-label="Edellinen">${mdi("chevron-left")}</button>
+      <span class="m">${monthLabel(this._month)}</span><button class="nav" data-a="next" aria-label="Seuraava">${mdi("chevron-right")}</button></div>`;
+    const buttons = `<div class="actions"><button class="btn" data-a="add">${mdi("plus")} Lisää</button>
+      <button class="btn sec2" data-a="scan">${mdi("camera")} Kuitti</button></div>
       <input type="file" id="file" accept="image/*" capture="environment" hidden>`;
     if (!d) return head + `<div class="empty">${this._error ? "" : "Ladataan…"}</div>` + buttons;
     const s = d.summary;
@@ -256,10 +259,10 @@ class BudjettiCard extends HTMLElement {
         <span class="f">${eur(c.spent_cents)} / ${eur(c.budget_cents)}</span></div>
         <div class="track"><div class="fill ${cls}" style="width:${Math.min(100, Math.max(0, pct * 100))}%"></div></div></div>`;
     }).join("") || `<div class="empty">Ei menoja eikä budjetteja tässä kuussa.</div>`;
-    const addBud = `<div class="bud" data-a="bud" data-cat=""><div class="r"><span style="color:var(--primary-color)">+ Aseta budjetti</span></div></div>`;
+    const addBud = `<div class="bud" data-a="bud" data-cat=""><div class="r"><span style="color:var(--primary-color);display:inline-flex;align-items:center;gap:4px">${mdi("plus")} Aseta budjetti</span></div></div>`;
     const txs = d.transactions.slice(0, this._config.transactions).map((t) => {
       const plus = t.type === "income" || t.amount_cents < 0;
-      const rc = (t.has_receipt || t.item_count) ? `<span class="rc" data-a="rcpt" data-id="${t.id}" title="Kuitti">🧾</span>` : "";
+      const rc = (t.has_receipt || t.item_count) ? `<span class="rc" data-a="rcpt" data-id="${t.id}" title="Kuitti">${mdi("receipt-text-outline")}</span>` : "";
       return `<div class="tx" data-a="tx" data-id="${t.id}"><span class="tag">${esc(t.category)}</span>
         <div class="d"><div class="n">${esc(t.note || (t.type === "income" ? "Tulo" : "Meno"))}</div><div class="dt">${dayLabel(t.date)}</div></div>
         ${rc}<span class="a ${plus ? "pos" : ""}">${plus ? "+" : "−"}${eur(Math.abs(t.amount_cents))}</span></div>`;
