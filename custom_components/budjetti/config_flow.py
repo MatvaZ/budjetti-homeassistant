@@ -5,11 +5,12 @@ from typing import Any
 
 import voluptuous as vol
 
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResult, OptionsFlow
+from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import BudjettiAuthError, BudjettiClient, BudjettiError
-from .const import CONF_API_KEY, CONF_URL, DOMAIN
+from .const import CONF_API_KEY, CONF_LARGE_EXPENSE, CONF_URL, DEFAULT_LARGE_EXPENSE, DOMAIN
 
 SCHEMA = vol.Schema({
     vol.Required(CONF_URL, default="http://"): str,
@@ -17,8 +18,28 @@ SCHEMA = vol.Schema({
 })
 
 
+class BudjettiOptionsFlow(OptionsFlow):
+    """Ison kulun raja automaatioiden tapahtumalle."""
+
+    async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        if user_input is not None:
+            return self.async_create_entry(data=user_input)
+        current = self.config_entry.options.get(CONF_LARGE_EXPENSE, DEFAULT_LARGE_EXPENSE)
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema({
+                vol.Required(CONF_LARGE_EXPENSE, default=current): vol.All(vol.Coerce(float), vol.Range(min=0)),
+            }),
+        )
+
+
 class BudjettiConfigFlow(ConfigFlow, domain=DOMAIN):
     VERSION = 1
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: ConfigEntry) -> BudjettiOptionsFlow:
+        return BudjettiOptionsFlow()
 
     async def _validate(self, data: dict) -> tuple[dict | None, dict]:
         errors: dict[str, str] = {}

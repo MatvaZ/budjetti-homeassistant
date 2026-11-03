@@ -51,6 +51,38 @@ actions:
 
 Anturien nimet näkyvät kohdassa Asetukset → Laitteet ja palvelut → Budjetti.
 
+## Kortit
+
+- **Budjetti** (`budjetti-card`): koko kuukausi. Näkyvät osiot, tapahtumien määrä ja otsikko valitaan kortin muokkauksessa.
+- **Budjetti (pieni)** (`budjetti-mini-card`): saldo, menot ja pikalisäys, esim. puhelimen etusivulle tai seinätablettiin.
+
+## Seuraava maksu
+
+Anturi **Seuraava maksu** kertoo seuraavan toistuvan menon summan. Attribuutit: `name`, `date`, `payment_category`, `upcoming_this_month` ja `net_after_upcoming`.
+
+## Tapahtumat automaatioille
+
+| Tapahtuma | Milloin | Tiedot |
+|---|---|---|
+| `budjetti_budget_threshold` | Budjetista on käytetty 80 % tai 100 % | `category`, `threshold`, `percent`, `spent`, `budget`, `month` |
+| `budjetti_large_expense` | Kirjataan iso kulu (oletus 100 €, raja vaihdetaan integraation asetuksista) | `id`, `amount`, `category`, `note`, `date`, `recurring` |
+
+Kokonaisbudjetin kategoria on `Yhteensä`. Sama raja ilmoitetaan kerran kuussa. Vanhoista kirjauksista ei ilmoiteta asennuksen jälkeen.
+
+```yaml
+automation:
+  - alias: Budjetti ylittyi
+    triggers:
+      - trigger: event
+        event_type: budjetti_budget_threshold
+        event_data:
+          threshold: 100
+    actions:
+      - action: notify.notify
+        data:
+          message: "{{ trigger.event.data.category }}: budjetti ylittyi ({{ trigger.event.data.spent }} / {{ trigger.event.data.budget }} €)"
+```
+
 ## Päivitykset ja versiointi
 
 Versio on `VERSION`-tiedostossa (sama `manifest.json`:ssa), muoto MAJOR.MINOR.PATCH. Kun versio

@@ -64,6 +64,7 @@ async def ws_month(hass, coordinator: BudjettiCoordinator, msg) -> dict:
         "transactions": await c.transactions(month),
         "categories": await c.categories(),
         "budgets": await c.budgets(month),
+        "upcoming": await c.upcoming(month),
     }
 
 

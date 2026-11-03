@@ -1,6 +1,7 @@
-/* Budjettikortti Home Assistantiin (Budjetti-integraatio lataa tämän automaattisesti).
- * Näyttää kuukauden tilanteen ja budjetit, sallii tapahtumien lisäyksen, muokkauksen ja poiston
+/* Budjettikortit Home Assistantiin (Budjetti-integraatio lataa tämän automaattisesti).
+ * budjetti-card näyttää kuukauden tilanteen, tulevat maksut ja budjetit, sallii tapahtumien lisäyksen, muokkauksen ja poiston
  * sekä kuitin lukemisen puhelimen kameralla (Claude budjetin kautta).
+ * budjetti-mini-card on tiivis versio: saldo, menot ja pikalisäys.
  * Kaikki tieto kulkee Home Assistantin websocketin kautta (budjetti/*-komennot). */
 
 const MONTHS = ["tammikuu", "helmikuu", "maaliskuu", "huhtikuu", "toukokuu", "kesäkuu",
@@ -29,9 +30,29 @@ async function shrinkImage(file, maxSide = 1600) {
   return { b64, url: URL.createObjectURL(blob) };
 }
 
+const CARD_DEFAULTS = {
+  title: "", transactions: 8, show_summary: true, show_upcoming: true, show_budgets: true,
+  show_actions: true, show_transactions: true,
+};
+const MINI_DEFAULTS = { title: "", show_upcoming: true, show_scan: true };
+
 const STYLE = `
   :host { display: block; }
   ha-card { padding: 16px; }
+  .title { font-size: 16px; font-weight: 500; margin-bottom: 10px; }
+  .urow { display: flex; align-items: center; gap: 10px; padding: 5px 0; font-size: 14px; }
+  .urow .dt { width: 42px; flex: none; font-size: 12px; color: var(--secondary-text-color); }
+  .urow .n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .urow .a { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .after { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--secondary-text-color);
+    padding-top: 6px; margin-top: 2px; border-top: 1px solid var(--divider-color); }
+  .after b { font-weight: 500; font-variant-numeric: tabular-nums; }
+  .mini .big { font-size: 26px; font-weight: 500; font-variant-numeric: tabular-nums; line-height: 1.2; }
+  .mini .k { font-size: 12px; color: var(--secondary-text-color); }
+  .mini .line { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--secondary-text-color); margin-top: 8px; }
+  .mini .line b { font-weight: 500; color: var(--primary-text-color); font-variant-numeric: tabular-nums; }
+  .mini .actions { margin-bottom: 0; }
+  button.btn.icon { flex: 0 0 48px; }
   .head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
   .head .m { font-size: 18px; font-weight: 500; }
   ha-icon { --mdc-icon-size: 18px; vertical-align: -3px; pointer-events: none; }
@@ -80,9 +101,11 @@ const STYLE = `
 
 class BudjettiCard extends HTMLElement {
   static getStubConfig() { return { transactions: 8 }; }
+  static getConfigElement() { return document.createElement("budjetti-card-editor"); }
+  get _defaults() { return CARD_DEFAULTS; }
 
   setConfig(config) {
-    this._config = { transactions: 8, ...config };
+    this._config = { ...this._defaults, ...config };
     this._month = monthKey(new Date());
     this._view = "main";
     if (!this.shadowRoot) {
@@ -243,7 +266,9 @@ class BudjettiCard extends HTMLElement {
     const buttons = `<div class="actions"><button class="btn" data-a="add">${mdi("plus")} Lisää</button>
       <button class="btn sec2" data-a="scan">${mdi("camera")} Kuitti</button></div>
       <input type="file" id="file" accept="image/*" capture="environment" hidden>`;
-    if (!d) return head + `<div class="empty">${this._error ? "" : "Ladataan…"}</div>` + buttons;
+    const c = this._config;
+    const title = c.title ? `<div class="title">${esc(c.title)}</div>` : "";
+    if (!d) return title + head + `<div class="empty">${this._error ? "" : "Ladataan…"}</div>` + (c.show_actions ? buttons : "");
     const s = d.summary;
     const sum = `<div class="sum"><div><div class="k">Menot</div><div class="v">${eur(s.expense_cents)}</div></div>
       <div><div class="k">Tulot</div><div class="v">${eur(s.income_cents)}</div></div>
@@ -267,8 +292,23 @@ class BudjettiCard extends HTMLElement {
         <div class="d"><div class="n">${esc(t.note || (t.type === "income" ? "Tulo" : "Meno"))}</div><div class="dt">${dayLabel(t.date)}</div></div>
         ${rc}<span class="a ${plus ? "pos" : ""}">${plus ? "+" : "−"}${eur(Math.abs(t.amount_cents))}</span></div>`;
     }).join("") || `<div class="empty">Ei tapahtumia.</div>`;
-    return head + sum + `<div class="sec">Budjetit (napauta muuttaaksesi)</div>${buds}${addBud}` + buttons +
-      `<div class="sec">Tapahtumat</div>${txs}`;
+    return title + head + (c.show_summary ? sum : "") + (c.show_upcoming ? this._upcomingView() : "") +
+      (c.show_budgets ? `<div class="sec">Budjetit (napauta muuttaaksesi)</div>${buds}${addBud}` : "") +
+      (c.show_actions ? buttons : "") +
+      (c.show_transactions ? `<div class="sec">Tapahtumat</div>${txs}` : "");
+  }
+
+  _upcomingView() {
+    const u = this._data.upcoming;
+    if (!u || !u.items.length) return "";
+    const rows = u.items.map((i) => {
+      const inc = i.type === "income";
+      return `<div class="urow"><span class="dt">${dayLabel(i.date)}</span><span class="n">${esc(i.name)}</span>
+        <span class="a ${inc ? "pos" : ""}">${inc ? "+" : "−"}${eur(i.amount_cents)}</span></div>`;
+    }).join("");
+    const after = u.net_after_cents == null ? "" : `<div class="after"><span>Tulevien kirjausten jälkeen</span>
+      <b class="${u.net_after_cents < 0 ? "neg" : ""}">${eur(u.net_after_cents)}</b></div>`;
+    return `<div class="sec">Tulossa</div>${rows}${after}`;
   }
 
   _formView() {
@@ -319,6 +359,72 @@ class BudjettiCard extends HTMLElement {
   }
 }
 
+/* Tiivis kortti: sama tieto ja sama lisäyslomake, mutta pääsivulla vain saldo ja pikalisäys. */
+class BudjettiMiniCard extends BudjettiCard {
+  static getStubConfig() { return {}; }
+  static getConfigElement() { return document.createElement("budjetti-mini-card-editor"); }
+  get _defaults() { return MINI_DEFAULTS; }
+  getCardSize() { return 3; }
+
+  _mainView() {
+    const d = this._data, c = this._config;
+    const label = c.title || monthLabel(this._month);
+    const buttons = `<div class="actions"><button class="btn" data-a="add">${mdi("plus")} Lisää</button>
+      ${c.show_scan ? `<button class="btn sec2 icon" data-a="scan" aria-label="Kuitti">${mdi("camera")}</button>` : ""}</div>
+      <input type="file" id="file" accept="image/*" capture="environment" hidden>`;
+    if (!d) return `<div class="mini"><div class="k">${esc(label)}</div><div class="empty">${this._error ? "" : "Ladataan…"}</div>${buttons}</div>`;
+    const s = d.summary, u = d.upcoming;
+    const after = c.show_upcoming && u && u.items.length && u.net_after_cents != null
+      ? `<div class="line"><span>Tulevien jälkeen</span><b class="${u.net_after_cents < 0 ? "neg" : ""}">${eur(u.net_after_cents)}</b></div>` : "";
+    return `<div class="mini"><div class="k">${esc(label)}: saldo</div>
+      <div class="big ${s.net_cents < 0 ? "neg" : "pos"}">${eur(s.net_cents)}</div>
+      <div class="line"><span>Menot</span><b>${eur(s.expense_cents)}</b></div>${after}${buttons}</div>`;
+  }
+}
+
+/* Graafinen asetuseditori (Muokkaa korttia). */
+const LABELS = {
+  title: "Otsikko (valinnainen)", transactions: "Näytettävien tapahtumien määrä",
+  show_summary: "Näytä menot, tulot ja saldo", show_upcoming: "Näytä tulevat maksut",
+  show_budgets: "Näytä budjetit", show_actions: "Näytä Lisää- ja Kuitti-napit",
+  show_transactions: "Näytä tapahtumat", show_scan: "Näytä kuittinappi",
+};
+const bool = (name) => ({ name, selector: { boolean: {} } });
+const CARD_SCHEMA = [
+  { name: "title", selector: { text: {} } },
+  { name: "transactions", selector: { number: { min: 1, max: 50, mode: "box" } } },
+  ...["show_summary", "show_upcoming", "show_budgets", "show_actions", "show_transactions"].map(bool),
+];
+const MINI_SCHEMA = [{ name: "title", selector: { text: {} } }, bool("show_upcoming"), bool("show_scan")];
+
+class BudjettiCardEditor extends HTMLElement {
+  get _schema() { return CARD_SCHEMA; }
+  get _defaults() { return CARD_DEFAULTS; }
+  setConfig(config) { this._config = config; this._update(); }
+  set hass(hass) { this._hass = hass; this._update(); }
+
+  _update() {
+    if (!this._config) return;
+    if (!this._form) {
+      this._form = document.createElement("ha-form");
+      this._form.computeLabel = (field) => LABELS[field.name] || field.name;
+      this._form.addEventListener("value-changed", (e) => {
+        e.stopPropagation();
+        this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: e.detail.value }, bubbles: true, composed: true }));
+      });
+      this.appendChild(this._form);
+    }
+    this._form.hass = this._hass;
+    this._form.schema = this._schema;
+    this._form.data = { ...this._defaults, ...this._config };
+  }
+}
+
+class BudjettiMiniCardEditor extends BudjettiCardEditor {
+  get _schema() { return MINI_SCHEMA; }
+  get _defaults() { return MINI_DEFAULTS; }
+}
+
 // Integraatio lataa tämän heti sivun alussa, ennen kuin Home Assistant ottaa käyttöön oman
 // komponenttirekisterinsä. Määritellään kortti vasta, kun sovellus on latautunut, muuten
 // kortti päätyisi väärään rekisteriin ("Custom element doesn't exist").
@@ -326,7 +432,12 @@ class BudjettiCard extends HTMLElement {
   for (let i = 0; i < 600 && !customElements.get("home-assistant-main"); i++) {
     await new Promise((r) => setTimeout(r, 100));
   }
-  if (!customElements.get("budjetti-card")) customElements.define("budjetti-card", BudjettiCard);
+  const elements = {
+    "budjetti-card": BudjettiCard, "budjetti-mini-card": BudjettiMiniCard,
+    "budjetti-card-editor": BudjettiCardEditor, "budjetti-mini-card-editor": BudjettiMiniCardEditor,
+  };
+  for (const [tag, cls] of Object.entries(elements)) if (!customElements.get(tag)) customElements.define(tag, cls);
 })();
 window.customCards = window.customCards || [];
-window.customCards.push({ type: "budjetti-card", name: "Budjetti", description: "Kuukauden budjetti, tapahtumat ja kuitin luku kameralla." });
+window.customCards.push({ type: "budjetti-card", name: "Budjetti", description: "Kuukauden budjetti, tulevat maksut, tapahtumat ja kuitin luku kameralla." });
+window.customCards.push({ type: "budjetti-mini-card", name: "Budjetti (pieni)", description: "Saldo, menot ja tapahtuman pikalisäys." });
