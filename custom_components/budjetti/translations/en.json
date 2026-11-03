@@ -26,6 +26,17 @@
       "reauth_successful": "API key updated."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Large expense settings",
+        "description": "An event is fired for automations when an expense of at least this amount is recorded. 0 = off.",
+        "data": {
+          "large_expense_eur": "Large expense (EUR)"
+        }
+      }
+    }
+  },
   "entity": {
     "sensor": {
       "expenses": {
@@ -45,6 +56,9 @@
       },
       "category": {
         "name": "{category}"
+      },
+      "next_payment": {
+        "name": "Next payment"
       }
     }
   },

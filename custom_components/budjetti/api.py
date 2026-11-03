@@ -19,6 +19,10 @@ class BudjettiAuthError(BudjettiError):
     """API-avain ei kelpaa."""
 
 
+class BudjettiNotFoundError(BudjettiError):
+    """Pyydettyä ei ole, esim. vanhempi sovellusversio ilman uutta rajapintaa."""
+
+
 def current_month() -> str:
     return date.today().strftime("%Y-%m")
 
@@ -43,7 +47,7 @@ class BudjettiClient:
                         detail = None
                     if not isinstance(detail, str):
                         detail = f"HTTP {resp.status}"
-                    raise BudjettiError(detail)
+                    raise (BudjettiNotFoundError if resp.status in (404, 405) else BudjettiError)(detail)
                 if resp.status == 204:
                     return None
                 if resp.content_type == "application/json":
@@ -64,6 +68,14 @@ class BudjettiClient:
 
     async def overview(self, month: str) -> dict:
         return await self._request("GET", "/api/overview", params={"month": month})
+
+    async def upcoming(self, month: str) -> dict:
+        """Kuun tulevat toistuvat. Sovellus ennen versiota 0.4.0 ei tunne tätä: tyhjä tulos."""
+        try:
+            return await self._request("GET", "/api/recurring/upcoming", params={"month": month})
+        except BudjettiNotFoundError:
+            return {"month": month, "items": [], "expense_cents": 0, "income_cents": 0,
+                    "net_after_cents": None, "next": None}
 
     async def transactions(self, month: str) -> list[dict]:
         return await self._request("GET", "/api/transactions", params={"month": month})

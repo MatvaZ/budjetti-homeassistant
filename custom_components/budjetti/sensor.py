@@ -1,4 +1,4 @@
-"""Anturit: kuukauden menot, tulot, saldo, kokonaisbudjetti, ennuste ja kategoriat."""
+"""Anturit: kuukauden menot, tulot, saldo, kokonaisbudjetti, ennuste, seuraava maksu ja kategoriat."""
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -56,6 +56,17 @@ SENSORS = (
         key="forecast", translation_key="forecast",
         value=lambda d: _eur(d.overview["forecast"]["projected_expense_cents"]),
         attrs=lambda d: {"projected_net": _eur(d.overview["forecast"]["projected_net_cents"])},
+    ),
+    BudjettiSensorDescription(
+        key="next_payment", translation_key="next_payment",
+        value=lambda d: _eur((d.upcoming.get("next") or {}).get("amount_cents")),
+        attrs=lambda d: {
+            "name": (d.upcoming.get("next") or {}).get("name"),
+            "date": (d.upcoming.get("next") or {}).get("date"),
+            "payment_category": (d.upcoming.get("next") or {}).get("category"),
+            "upcoming_this_month": _eur(d.upcoming.get("expense_cents")),
+            "net_after_upcoming": _eur(d.upcoming.get("net_after_cents")),
+        },
     ),
 )
 
