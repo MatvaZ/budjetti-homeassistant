@@ -8,7 +8,7 @@ from typing import Any
 import aiohttp
 
 TIMEOUT = aiohttp.ClientTimeout(total=30)
-SCAN_TIMEOUT = aiohttp.ClientTimeout(total=120)  # Claude lukee kuittia hetken
+SCAN_TIMEOUT = aiohttp.ClientTimeout(total=120)  # kuitin luku kestää hetken
 
 
 class BudjettiError(Exception):

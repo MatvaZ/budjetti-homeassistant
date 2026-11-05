@@ -1,6 +1,6 @@
 /* Budjettikortit Home Assistantiin (Budjetti-integraatio lataa tämän automaattisesti).
  * budjetti-card näyttää kuukauden tilanteen, tulevat maksut ja budjetit, sallii tapahtumien lisäyksen, muokkauksen ja poiston
- * sekä kuitin lukemisen puhelimen kameralla (Claude budjetin kautta).
+ * sekä kuitin lukemisen puhelimen kameralla (budjetin kautta).
  * budjetti-mini-card on tiivis versio: saldo, menot ja pikalisäys.
  * Kaikki tieto kulkee Home Assistantin websocketin kautta (budjetti/*-komennot). */
 
@@ -214,7 +214,7 @@ class BudjettiCard extends HTMLElement {
     try {
       const image = await shrinkImage(file);
       this._form.image = image;
-      this._busy = "Claude lukee kuittia… (noin 10–20 s)"; this._render();
+      this._busy = "Luetaan kuittia… (noin 10–20 s)"; this._render();
       const s = await this._ws("scan", { image: image.b64, media_type: "image/jpeg" });
       Object.assign(this._form, {
         amount: s.amount_cents != null ? (s.amount_cents / 100).toFixed(2).replace(".", ",") : "",

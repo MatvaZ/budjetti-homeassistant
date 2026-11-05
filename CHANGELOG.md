@@ -10,7 +10,9 @@ Budjetti-vaatimus tarkoittaa taustapalvelun (budjetti-backend) versiota.
   kun käyttö on oikeasti vähintään 80 % / 100 %. Tapahtuman `percent` on edelleen pyöristetty.
 - Automaattiset testit (pytest, Home Assistant 2025.3.4 ja 2026.2.3) ja niiden ajo CI:ssä,
   kortin JS-syntaksin tarkistus CI:ssä.
-- README: Budjetti-vaatimus tarkennettu (0.3.0, tulevat maksut 0.4.0), kuollut linkki poistettu,
+- Vähimmäisvaatimus nostettu: Budjetti 0.4.0 (aiemmin 0.3.0, tulevat maksut 0.4.0).
+- Kuitin luvun teksteistä poistettu palveluntarjoajan nimi (kortti: "Luetaan kuittia…").
+- README: kuollut linkki poistettu,
   kehittäjän pika-aloitus. Uudet KEHITYS.md (kehitysohje ja rajapintasopimus) ja tämä tiedosto.
 
 ## 0.2.0 (2026-11-03)

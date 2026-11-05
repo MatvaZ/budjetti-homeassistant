@@ -126,7 +126,7 @@ async def ws_set_budget(hass, coordinator: BudjettiCoordinator, msg) -> dict:
 
 @_handler({vol.Required("type"): "budjetti/scan", vol.Required("image"): str, vol.Optional("media_type"): str})
 async def ws_scan(hass, coordinator: BudjettiCoordinator, msg) -> dict:
-    """Kuitti Claudelle (budjetin kautta): palauttaa esitäytön, ei tallenna mitään."""
+    """Kuitti luettavaksi (budjetin kautta): palauttaa esitäytön, ei tallenna mitään."""
     image, media_type = _image(msg)
     return await coordinator.client.scan_receipt(image, media_type)
 

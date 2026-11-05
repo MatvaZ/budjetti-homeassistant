@@ -6,7 +6,7 @@ Budjetti-palvelimen ja siitä luodun API-avaimen.
 
 - **Budjettikortti**: kuukauden menot, tulot ja saldo, budjetit palkkeina, viimeisimmät tapahtumat.
   Tapahtumien lisäys, muokkaus ja poisto, budjettien muutos napauttamalla.
-- **📷 Kuitti**: avaa puhelimen kameran, Claude lukee kuitin (kauppa, summa, päivä, kategoria,
+- **📷 Kuitti**: avaa puhelimen kameran, Budjetti lukee kuitin (kauppa, summa, päivä, kategoria,
   tuoterivit) ja täyttää lomakkeen. Tallennettaessa kuva ja tuoterivit tallentuvat budjettiin.
 - **Anturit** automaatioihin: menot, tulot ja saldo tässä kuussa, kokonaisbudjettia jäljellä,
   menoennuste kuun loppuun sekä jokaisen kategorian käyttö (budjetti ja käyttöaste attribuutteina).
@@ -18,11 +18,8 @@ Nabu Casa) ilman suoraa yhteyttä budjettiin.
 ## Vaatimukset
 
 - Home Assistant 2025.3 tai uudempi ja [HACS](https://hacs.xyz).
-- Budjetti v0.3.0 tai uudempi, jonka Home Assistant tavoittaa (esim. `http://192.168.1.20:8000`).
-- Tulevat maksut (kortin **Tulossa**-osio, pienen kortin "Tulevien jälkeen" ja **Seuraava maksu**
-  -anturi) vaativat Budjetti v0.4.0:n. Vanhemmalla versiolla muu integraatio toimii, tulevat maksut
-  jäävät tyhjiksi ja Seuraava maksu -anturin tila on tuntematon.
-- Kuitin lukuun Budjetissa `ANTHROPIC_API_KEY` (Claude). Ilman sitä kortin muut toiminnot toimivat.
+- Budjetti v0.4.0 tai uudempi, jonka Home Assistant tavoittaa (esim. `http://192.168.1.20:8000`).
+- Kuitin lukuun Budjetissa asetettu `ANTHROPIC_API_KEY`. Ilman sitä kortin muut toiminnot toimivat.
 
 ## Asennus
 

@@ -82,7 +82,7 @@ Virhe: `{"detail": "teksti"}`. 401 → reauth-kulku, 404/405 → `BudjettiNotFou
 | `PUT /api/budgets/{kategoria}?month=&only=true` | palvelu, kortti | runko `amount_cents`; kategoria `Yhteensä` = kokonaisbudjetti |
 | `POST /api/receipt/scan` | kortti | multipart `file`; vastaus esitäyttää lomakkeen |
 
-Vähimmäisversio on Budjetti 0.3.0 (tulevat maksut 0.4.0). Jos Budjetin rajapinta muuttuu, päivitä
+Vähimmäisversio on Budjetti 0.4.0. Integraatio sietää edelleen vanhemman version ilman tulevia maksuja (404/405 → tyhjä tulos), mutta sitä ei tueta. Jos Budjetin rajapinta muuttuu, päivitä
 tämä taulukko, `tests/conftest.py`:n FakeBudjetti ja README:n vaatimukset.
 
 ## Tapoja
