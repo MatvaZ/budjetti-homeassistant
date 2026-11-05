@@ -3,7 +3,7 @@
 Versiot vastaavat GitHub-julkaisuja (`vX.Y.Z`), jotka syntyvät, kun `VERSION` muuttuu `main`-haarassa.
 Budjetti-vaatimus tarkoittaa taustapalvelun (budjetti-backend) versiota.
 
-## 0.2.1 (julkaisematta)
+## 0.2.1 (2026-11-05)
 
 - Korjattu: budjetin raja -tapahtuma (`budjetti_budget_threshold`) laukesi pyöristetyn prosentin
   perusteella, eli 100 % -raja jo 99,5 %:n käytöllä ja 80 % -raja 79,5 %:lla. Nyt raja täyttyy vasta,
