@@ -1,0 +1,3 @@
+# Testiriippuvuudet vähimmäisversiolle (hacs.json: Home Assistant 2025.3). Asennus: scripts/asenna-testit.sh vanhin
+pytest-homeassistant-custom-component==0.13.225
+homeassistant==2025.3.4

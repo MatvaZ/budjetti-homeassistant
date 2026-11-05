@@ -75,7 +75,8 @@ class BudjettiCoordinator(DataUpdateCoordinator[BudjettiData]):
                 state["levels"].pop(category, None)
                 continue
             percent = round(spent * 100 / budget)
-            level = max((t for t in BUDGET_THRESHOLDS if percent >= t), default=0)
+            # Raja verrataan tarkkaan käyttöön, ei pyöristettyyn: 99,5 % ei ole vielä 100 %.
+            level = max((t for t in BUDGET_THRESHOLDS if spent * 100 >= t * budget), default=0)
             if level > state["levels"].get(category, 0) and not first_run:
                 self.hass.bus.async_fire(EVENT_BUDGET_THRESHOLD, {
                     "category": category, "threshold": level, "percent": percent,

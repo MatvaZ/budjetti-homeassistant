@@ -1,6 +1,8 @@
 # Budjetti Home Assistantiin
 
-Home Assistant -integraatio [Budjetti](https://github.com/MatvaZ/budjetti)-sovellukselle (budjetti-backend):
+Home Assistant -integraatio Budjetti-sovellukselle (budjetti-backend). Budjetti on erillinen
+itse ylläpidettävä palvelu, jonka lähdekoodi ei ole julkinen; integraatio tarvitsee toimivan
+Budjetti-palvelimen ja siitä luodun API-avaimen.
 
 - **Budjettikortti**: kuukauden menot, tulot ja saldo, budjetit palkkeina, viimeisimmät tapahtumat.
   Tapahtumien lisäys, muokkaus ja poisto, budjettien muutos napauttamalla.
@@ -17,6 +19,9 @@ Nabu Casa) ilman suoraa yhteyttä budjettiin.
 
 - Home Assistant 2025.3 tai uudempi ja [HACS](https://hacs.xyz).
 - Budjetti v0.3.0 tai uudempi, jonka Home Assistant tavoittaa (esim. `http://192.168.1.20:8000`).
+- Tulevat maksut (kortin **Tulossa**-osio, pienen kortin "Tulevien jälkeen" ja **Seuraava maksu**
+  -anturi) vaativat Budjetti v0.4.0:n. Vanhemmalla versiolla muu integraatio toimii, tulevat maksut
+  jäävät tyhjiksi ja Seuraava maksu -anturin tila on tuntematon.
 - Kuitin lukuun Budjetissa `ANTHROPIC_API_KEY` (Claude). Ilman sitä kortin muut toiminnot toimivat.
 
 ## Asennus
@@ -64,7 +69,7 @@ Anturi **Seuraava maksu** kertoo seuraavan toistuvan menon summan. Attribuutit: 
 
 | Tapahtuma | Milloin | Tiedot |
 |---|---|---|
-| `budjetti_budget_threshold` | Budjetista on käytetty 80 % tai 100 % | `category`, `threshold`, `percent`, `spent`, `budget`, `month` |
+| `budjetti_budget_threshold` | Budjetista on käytetty vähintään 80 % tai 100 % | `category`, `threshold`, `percent`, `spent`, `budget`, `month` |
 | `budjetti_large_expense` | Kirjataan iso kulu (oletus 100 €, raja vaihdetaan integraation asetuksista) | `id`, `amount`, `category`, `note`, `date`, `recurring` |
 
 Kokonaisbudjetin kategoria on `Yhteensä`. Sama raja ilmoitetaan kerran kuussa. Vanhoista kirjauksista ei ilmoiteta asennuksen jälkeen.
@@ -87,3 +92,18 @@ automation:
 
 Versio on `VERSION`-tiedostossa (sama `manifest.json`:ssa), muoto MAJOR.MINOR.PATCH. Kun versio
 muuttuu `main`-haarassa, GitHub Actions tekee julkaisun ja HACS ilmoittaa päivityksestä.
+Muutokset versioittain: [CHANGELOG.md](CHANGELOG.md).
+
+## Kehitys
+
+Testit ajetaan Python 3.13:lla ilman oikeaa Home Assistantia tai Budjettia (rajapinta mockataan):
+
+```bash
+python3.13 -m venv .venv && . .venv/bin/activate
+scripts/asenna-testit.sh          # tai: scripts/asenna-testit.sh vanhin  (HA 2025.3)
+python -m pytest -q
+node --check custom_components/budjetti/frontend/budjetti-card.js
+```
+
+Kehitys tehdään omassa haarassa: versiomuutos `main`-haarassa julkaisee version heti HACSiin.
+Tarkemmat ohjeet: [KEHITYS.md](KEHITYS.md).

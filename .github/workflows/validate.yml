@@ -1,10 +1,14 @@
-# Tarkistaa integraation Home Assistantin (hassfest) ja HACS:n työkaluilla.
+# Tarkistaa integraation Home Assistantin (hassfest) ja HACS:n työkaluilla, ajaa testit ja
+# tarkistaa kortin JavaScriptin syntaksin. Ei julkaise mitään (julkaisu: release.yml).
 name: Tarkistus
 
 on:
   push:
   pull_request:
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   hassfest:
@@ -30,3 +34,29 @@ jobs:
           v=$(tr -d '[:space:]' < VERSION)
           m=$(python3 -c "import json;print(json.load(open('custom_components/budjetti/manifest.json'))['version'])")
           [ "$v" = "$m" ] || { echo "VERSION ($v) ja manifest.json ($m) eroavat"; exit 1; }
+
+  testit:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ha: [nykyinen, vanhin]  # requirements_test.txt ja requirements_test_min.txt (HA 2025.3)
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - name: Asenna testiriippuvuudet
+        run: scripts/asenna-testit.sh ${{ matrix.ha == 'vanhin' && 'vanhin' || '' }}
+      - name: Testit
+        run: python -m pytest -q
+
+  kortti:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+      - name: Kortin JS-syntaksi
+        run: node --check custom_components/budjetti/frontend/budjetti-card.js

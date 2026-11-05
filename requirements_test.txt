@@ -1,0 +1,3 @@
+# Testiriippuvuudet (nykyinen testattava Home Assistant). Asennus: scripts/asenna-testit.sh
+# pytest-homeassistant-custom-component 0.13.316 = Home Assistant 2026.2.3.
+pytest-homeassistant-custom-component==0.13.316
